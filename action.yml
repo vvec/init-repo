@@ -1,0 +1,22 @@
+name: 'Init Repo Lables'
+description: 'creates a standard set of labels in repo'
+inputs:
+  repo-id:  # id of input
+    description: 'info for repo'
+    required: true
+    default: 'ego'
+  repo-name:  # id of input
+    description: 'info for repo'
+    required: true
+    default: 'what'
+  repo-owner:  # id of input
+    description: 'info for repo'
+    required: true
+    default: 'who'
+  repo-token:  # id of input
+    description: 'info for repo'
+    required: true
+    default: 'shhh'
+runs:
+  using: 'node12'
+  main: 'index.js'
