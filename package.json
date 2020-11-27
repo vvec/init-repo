@@ -1,0 +1,25 @@
+{
+  "name": "init-repo",
+  "version": "1.0.0",
+  "description": "This action adds standard set of labels to a repository",
+  "main": "index.js",
+  "dependencies": {
+    "@actions/core": "^1.2.6",
+    "@actions/github": "^4.0.0",
+    "@octokit/graphql": "^4.5.7"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vvec/init-repo.git"
+  },
+  "author": "michael webster",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/vvec/init-repo/issues"
+  },
+  "homepage": "https://github.com/vvec/init-repo#readme"
+}
