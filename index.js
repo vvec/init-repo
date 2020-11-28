@@ -1,7 +1,6 @@
 const core = require('@actions/core');
 const {graphql} = require('@octokit/graphql');
 
-
 const needLabels = [
   {
     "color": "ff6767",
@@ -161,6 +160,130 @@ async function addRepoLabel(repo, label) {
   }
 }
 
+
+const baseProjects = [
+  {
+    "name" : "1: Design Overview",
+    "body" : "Collection of *ALL* Design Issues in a Project"
+  },
+  {
+    "name" : "2: Functional Design",
+    "body" : "Collection of Functional Design Issues"
+  },
+  {
+    "name" : "3: Mechanical Design",
+    "body" : "Collection of Mechanical Design Issues"
+  },
+  {
+    "name" : "3: Hardware Design",
+    "body" : "Collection of Hardware Design Issues"
+  },
+  {
+    "name" : "3: Firmware Design",
+    "body" : "Collection of Firmware Design Issues"
+  },
+  {
+    "name" : "3: Software Design",
+    "body" : "Collection of Software Design Issues"
+  }
+];
+
+const createProject = `mutation createProject($repo_id: [ID!], $owner_id: ID!, $project_name: String!, $project_body: String) {
+  createProject( input:{repositoryIds: $repo_id, ownerId: $owner_id, name: $project_name,  body: $project_body, }) {
+      project{
+        id
+        body
+        name
+        owner{
+          id
+        }
+        columns(first: 100){
+          totalCount
+          nodes{
+            id
+            name
+          }
+        }
+      }
+    }
+  }
+`
+
+async function addRepoProject(repo, projectName, projectBody ) {
+  // @todo: add null parameter rejection for required parameters
+  projectBody = projectBody || null;
+  
+  const queryVariables = Object.assign({},{
+      repo_owner: repo.owner, 
+      repo_name: repo.name,
+      headers: {
+          authorization: `Bearer ` + repo.token,
+          accept: `application/vnd.github.bane-preview+json`,
+          },   
+      },
+      { repo_id: [repo.id], owner_id: repo.id, project_name: projectName, project_body: projectBody }
+  );
+
+  try {
+      // console.log("vars: ", JSON.stringify(queryVariables));
+
+      const response = await graphql(
+        createProject,
+         queryVariables 
+      );
+      return response.createProject.project;
+  } catch (err) {
+      console.log("failed", err.request)
+      console.log(err.message)
+      return null;
+  }
+}
+
+const createColumn = `mutation addProjectColumn($project_id: ID!, $column_name: String!) {
+  addProjectColumn(input:{projectId: $project_id, name: $column_name }) {
+    project{
+      id
+      name
+      columns(first:100) {
+        nodes{
+          id
+          name
+        }
+      }
+    }  
+  }
+}
+`
+
+async function addProjectColumn(repo, projectId, columnName ) {
+  // @todo: add null parameter rejection for required parameters
+  
+  const queryVariables = Object.assign({},{
+      repo_owner: repo.owner, 
+      repo_name: repo.name,
+      headers: {
+          authorization: `Bearer ` + repo.token,
+          accept: `application/vnd.github.bane-preview+json`,
+          },   
+      },
+      { project_id: projectId, column_name: columnName }
+  );
+
+  try {
+      // console.log("vars: ", JSON.stringify(queryVariables));
+
+      const response = await graphql(
+        createColumn,
+        queryVariables 
+      );
+      return response.addProjectColumn.project;
+  } catch (err) {
+      console.log("failed", err.request)
+      console.log(err.message)
+      return null;
+  }
+}
+
 async function action(){
   const labels = [ ...stages,
       ...needLabels,
@@ -188,6 +311,17 @@ async function action(){
         result = await addRepoLabel(repoConfig, label);
     }
     console.log("final result:\n", JSON.stringify(result));
+
+    for(const project of baseProjects) {
+      const resultProject = await addRepoProject(repoConfig, project.name, project.body);
+      // console.log("project result: ", JSON.stringify(resultProject));
+      var projID = resultProject.id;
+      // console.log(projID);
+      for(const column of columns) {
+          const resultColumn = await addProjectColumn(repoConfig, resultProject.id, column.name)
+          console.log("project result: ", JSON.stringify(resultColumn));               
+      }
+    }
   } catch (err) {
       console.log("failed", err.request)
       console.log(err.message)
