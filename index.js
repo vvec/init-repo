@@ -315,12 +315,12 @@ async function action(){
     for(const project of baseProjects) {
       const resultProject = await addRepoProject(repoConfig, project.name, project.body);
       // console.log("project result: ", JSON.stringify(resultProject));
-      var projID = resultProject.id;
-      // console.log(projID);
-      for(const column of columns) {
-          const resultColumn = await addProjectColumn(repoConfig, resultProject.id, column.name)
-          console.log("project result: ", JSON.stringify(resultColumn));               
+      var resultColumn = null;
+      for(const stage of stages) {
+          resultColumn = await addProjectColumn(repoConfig, resultProject.id, stage.name)
+          // console.log("project result: ", JSON.stringify(resultColumn));               
       }
+      console.log("final result:\n", JSON.stringify(resultColumn));     
     }
   } catch (err) {
       console.log("failed", err.request)
