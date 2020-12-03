@@ -91,11 +91,11 @@ const statusLabels = [
 ];
 
 const stages = [
-  {
-    "color": "5f5f5f",
-    "description": "This issue is new and waiting for triage",
-    "name": "0: NEW",
-  },      
+//   {
+//     "color": "5f5f5f",
+//     "description": "This issue is new and waiting for triage",
+//     "name": "0: NEW",
+//   },      
   {
     "color": "1f7f5f",
     "description": "This issue is being investigated",
