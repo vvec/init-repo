@@ -27,17 +27,17 @@ const needLabels = [
 const statusLabels = [
   {
     "color": "cfcfcf",
-    "description": "new issue for triage",
+    "description": "issue is waiting for triage",
     "name": "4: New",
   },
   {
     "color": "cfcfcf",
-    "description": "re-opened issue for triage",
+    "description": "issue is ready for work",
     "name": "4: Reopened",
   },
   {
     "color": "7fbf7f",
-    "description": "issue ready for, or being worked on",
+    "description": "issue is being worked on",
     "name": "4: In Progress",
   },
   {
@@ -86,16 +86,11 @@ const statusLabels = [
   {
     "color": "db1d3a",
     "description": "Issue addresses unintended behaviour or functionality",
-    "name": "2: Bugs",
+    "name": "2: Bug",
   },       
 ];
 
-const stages = [
-//   {
-//     "color": "5f5f5f",
-//     "description": "This issue is new and waiting for triage",
-//     "name": "0: NEW",
-//   },      
+const stageLabels = [     
   {
     "color": "1f7f5f",
     "description": "This issue is being investigated",
@@ -109,13 +104,25 @@ const stages = [
   {
     "color": "1f7f9f",
     "description": "This issue is being tested",
-    "name": "3: TESTING",
+    "name": "3: VERIFICATION",
   },
   {
     "color": "3f5fbf",
     "description": "This issue is can be released",
     "name": "3: RELEASE",
   },       
+];
+
+const defaultLabels = [
+  {"name" : "bug"},
+  {"name" : "documentation"},
+  {"name" : "duplicate"},
+  {"name" : "enhancement"},
+  {"name" : "good first time"},
+  {"name" : "help wanted"},
+  {"name" : "invalid"},
+  {"name" : "question"}, 
+  {"name" : "wontfix"},
 ];
 
 const addLabel = `mutation addLabel($repo_id: ID!, $label_name: String!, $label_description:String!, $label_color:String!) {
@@ -160,31 +167,51 @@ async function addRepoLabel(repo, label) {
   }
 }
 
+const deleteLabel = `mutation deleteLabel($repo_id: ID!, $label_name: String!) {
+  deleteLabel(input:{repositoryId: $repo_id, name: $label_name}) {
+    label {
+      repository {
+        name
+      }
+      id
+      name
+      description
+      color
+    }
+  }
+}
+`
 
+async function deleteRepoLabel(repo, label) {
+  const queryVariables = Object.assign({},{
+      repo_owner: repo.owner, 
+      repo_name: repo.name,
+      headers: {
+          authorization: `Bearer ` + repo.token,
+          accept: `application/vnd.github.bane-preview+json`,
+          },   
+      },
+      { repo_id: repo.id, label_name: label.name }
+  );
+
+  try {
+      console.log("vars: ", JSON.stringify(queryVariables));
+
+      const response = await graphql(
+        deleteLabel,
+        queryVariables 
+      );
+      return label.name;
+  } catch (err) {
+      console.log("failed", err.request)
+      console.log(err.message)
+      return null;
+  }
+}
 const baseProjects = [
   {
     "name" : "1: Design Overview",
     "body" : "Collection of *ALL* Design Issues in a Project"
-  },
-  {
-    "name" : "2: Functional Design",
-    "body" : "Collection of Functional Design Issues"
-  },
-  {
-    "name" : "3: Mechanical Design",
-    "body" : "Collection of Mechanical Design Issues"
-  },
-  {
-    "name" : "3: Hardware Design",
-    "body" : "Collection of Hardware Design Issues"
-  },
-  {
-    "name" : "3: Firmware Design",
-    "body" : "Collection of Firmware Design Issues"
-  },
-  {
-    "name" : "3: Software Design",
-    "body" : "Collection of Software Design Issues"
   }
 ];
 
@@ -285,7 +312,7 @@ async function addProjectColumn(repo, projectId, columnName ) {
 }
 
 async function action(){
-  const labels = [ ...stages,
+  const motusLabels = [ ...stageLabels,
       ...needLabels,
       ...typeLabels,
       ...statusLabels,
@@ -305,9 +332,16 @@ async function action(){
     repoConfig.token = core.getInput('repo-token', {required: true});
     console.log("repo:\n" + JSON.stringify(repoConfig));
 
-    console.log("labels:\n" + JSON.stringify(labels));
+    console.log("labels:\n" + JSON.stringify(defaultLabels));
     var result = null;
-    for(const label of labels) {
+    for(const label of defaultLabels) {
+        result = await deleteRepoLabel(repoConfig, label);
+    }
+    console.log("final result:\n", JSON.stringify(result));
+
+    console.log("labels:\n" + JSON.stringify(motusLabels));
+    var result = null;
+    for(const label of motusLabels) {
         result = await addRepoLabel(repoConfig, label);
     }
     console.log("final result:\n", JSON.stringify(result));
@@ -316,7 +350,7 @@ async function action(){
       const resultProject = await addRepoProject(repoConfig, project.name, project.body);
       // console.log("project result: ", JSON.stringify(resultProject));
       var resultColumn = null;
-      for(const stage of stages) {
+      for(const stage of stageLabels) {
           resultColumn = await addProjectColumn(repoConfig, resultProject.id, stage.name)
           // console.log("project result: ", JSON.stringify(resultColumn));               
       }
