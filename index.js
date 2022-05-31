@@ -113,18 +113,6 @@ const stageLabels = [
   },       
 ];
 
-const defaultLabels = [
-  {"name" : "bug"},
-  {"name" : "documentation"},
-  {"name" : "duplicate"},
-  {"name" : "enhancement"},
-  {"name" : "good first time"},
-  {"name" : "help wanted"},
-  {"name" : "invalid"},
-  {"name" : "question"}, 
-  {"name" : "wontfix"},
-];
-
 const addLabel = `mutation addLabel($repo_id: ID!, $label_name: String!, $label_description:String!, $label_color:String!) {
   createLabel(input:{repositoryId: $repo_id, name: $label_name, description: $label_description, color: $ label_color}) {
     label {
@@ -167,47 +155,6 @@ async function addRepoLabel(repo, label) {
   }
 }
 
-const deleteLabel = `mutation deleteLabel($repo_id: ID!, $label_name: String!) {
-  deleteLabel(input:{repositoryId: $repo_id, name: $label_name}) {
-    label {
-      repository {
-        name
-      }
-      id
-      name
-      description
-      color
-    }
-  }
-}
-`
-
-async function deleteRepoLabel(repo, label) {
-  const queryVariables = Object.assign({},{
-      repo_owner: repo.owner, 
-      repo_name: repo.name,
-      headers: {
-          authorization: `Bearer ` + repo.token,
-          accept: `application/vnd.github.bane-preview+json`,
-          },   
-      },
-      { repo_id: repo.id, label_name: label.name }
-  );
-
-  try {
-      console.log("vars: ", JSON.stringify(queryVariables));
-
-      const response = await graphql(
-        deleteLabel,
-        queryVariables 
-      );
-      return label.name;
-  } catch (err) {
-      console.log("failed", err.request)
-      console.log(err.message)
-      return null;
-  }
-}
 const baseProjects = [
   {
     "name" : "1: Design Overview",
@@ -331,13 +278,6 @@ async function action(){
     repoConfig.owner = core.getInput('repo-owner', {required: true});
     repoConfig.token = core.getInput('repo-token', {required: true});
     console.log("repo:\n" + JSON.stringify(repoConfig));
-
-    console.log("labels:\n" + JSON.stringify(defaultLabels));
-    var result = null;
-    for(const label of defaultLabels) {
-        result = await deleteRepoLabel(repoConfig, label);
-    }
-    console.log("final result:\n", JSON.stringify(result));
 
     console.log("labels:\n" + JSON.stringify(motusLabels));
     var result = null;
