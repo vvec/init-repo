@@ -16,12 +16,12 @@ jobs:
     # steps executed by job
     steps:
     - run: echo "Git hub context ${{toJson(github.event)}}"  # [debug] dump trigger event context info
-    # setup node enviroment
-    - uses: actions/setup-node@v3
-      with:
-        node-version: lts/*
-    - run: npm ci
-    - run: npm test
+    # @ todo: figure out how to setup node enviroment
+#     - uses: actions/setup-node@v3
+#       with:
+#         node-version: lts/*
+#     - run: npm ci
+#     - run: npm test
   # execute job action(s)
     - name: create labels
       id: init-repo
