@@ -15,21 +15,18 @@ jobs:
     
     # steps executed by job
     steps:
-    - run: echo "Git hub context ${{toJson(github.event)}}"  # [debug] dump trigger event context info
-    # @ todo: figure out how to setup node enviroment
-#     - uses: actions/setup-node@v3
-#       with:
-#         node-version: lts/*
-#     - run: npm ci
-#     - run: npm test
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '14'
+      - run: echo "Git hub context ${{toJson(github.event)}}"  # [debug] dump trigger event context info
   # execute job action(s)
-    - name: create labels
-      id: init-repo
-      # call script defined in <owner>/<repo>/<script> and by @<release> or @<branch>
-      uses: vvec/init-repo@main
-      # with parameters defined ../<repo>/<script>/action.yml
-      with:
-        repo-token: ${{secrets.GITHUB_TOKEN}}
-        repo-id: ${{github.event.repository.node_id}}
-        repo-name: ${{github.event.repository.name}}
-        repo-owner: ${{github.event.repository.owner.login}}
+      - name: create labels
+        id: init-repo
+        # call script defined in <owner>/<repo>/<script> and by @<release> or @<branch>
+        uses: vvec/init-repo@main
+        # with parameters defined ../<repo>/<script>/action.yml
+        with:
+          repo-token: ${{secrets.GITHUB_TOKEN}}
+          repo-id: ${{github.event.repository.node_id}}
+          repo-name: ${{github.event.repository.name}}
+          repo-owner: ${{github.event.repository.owner.login}}
