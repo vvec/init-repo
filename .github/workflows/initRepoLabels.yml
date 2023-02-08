@@ -10,6 +10,10 @@ jobs:
   job-1:
     # define platform required for job
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        node-version: [14.x]    
     # description of function performed by the job
     name: creating standard labels in ${{github.event.repository.name}}
     
@@ -29,6 +33,7 @@ jobs:
       uses: vvec/init-repo@main
       # with parameters defined ../<repo>/<script>/action.yml
       with:
+        node-version: ${{ matrix.node-version }}
         repo-token: ${{secrets.GITHUB_TOKEN}}
         repo-id: ${{github.event.repository.node_id}}
         repo-name: ${{github.event.repository.name}}
