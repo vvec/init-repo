@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v3
         with:
-          node-version: '14'
+          node-version: '16'
       - run: echo "Git hub context ${{toJson(github.event)}}"  # [debug] dump trigger event context info
   # execute job action(s)
       - name: create labels
